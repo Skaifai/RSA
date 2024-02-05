@@ -12,14 +12,27 @@ import (
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
+
 	fmt.Println("Choose primes:")
-	p := new(big.Int).SetUint64(stringToInt(readAndCleanInput(reader)))
-	q := new(big.Int).SetUint64(stringToInt(readAndCleanInput(reader)))
+
+	p := new(big.Int)
+	p.SetString(readAndCleanInput(reader), 10)
+	for IsPrime(p) == false {
+		fmt.Println(p.Text(10), "is not a prime number. Choose a prime.")
+		p = new(big.Int).SetUint64(stringToInt(readAndCleanInput(reader)))
+	}
+
+	q := new(big.Int)
 	for q.Cmp(p) == 0 {
 		println("Choose another prime")
 		q = new(big.Int).SetUint64(stringToInt(readAndCleanInput(reader)))
-
 	}
+	q.SetString(readAndCleanInput(reader), 10)
+	for IsPrime(q) == false {
+		fmt.Println(q, "is not a prime number. Choose a prime.")
+		q = new(big.Int).SetUint64(stringToInt(readAndCleanInput(reader)))
+	}
+
 	var n big.Int
 	n.Mul(p, q)
 	var phi big.Int
@@ -28,13 +41,13 @@ func main() {
 	fmt.Println("PHI:", phi.String())
 
 	publicKeys := possiblePubKeys(&n, &phi)
-	fmt.Println(publicKeys)
+	//fmt.Println(publicKeys)
 	chosenPublicIndex := rand.Intn(len(publicKeys))
 	publicKey := publicKeys[chosenPublicIndex]
 	fmt.Println("PUBLIC KEY:", publicKey.String())
 
 	privateKeys := possiblePrivateKeys(&publicKey, &phi, &n)
-	fmt.Println(privateKeys)
+	//fmt.Println(privateKeys)
 	chosenPrivateIndex := rand.Intn(len(privateKeys))
 	privateKey := privateKeys[chosenPrivateIndex]
 	fmt.Println("PRIVATE KEY:", privateKey.String())
@@ -136,4 +149,32 @@ func DecryptMessage(message *big.Int, privateKey *big.Int, n *big.Int) big.Int {
 	var res big.Int
 	res.Exp(message, privateKey, n)
 	return res
+}
+
+func IsPrime(number *big.Int) bool {
+	var zero big.Int
+	zero.SetInt64(0)
+	var two big.Int
+	two.SetInt64(2)
+	var copiedNum big.Int
+	copiedNum.Set(number)
+	if copiedNum.Mod(number, &two).Cmp(&zero) == 0 {
+		return false
+	}
+	copiedNum.Set(number)
+
+	var half big.Int
+	half.Sub(&copiedNum, &two)
+	var divisor big.Int
+	divisor.SetInt64(3)
+
+	for divisor.Cmp(&half) < 0 {
+		if copiedNum.Mod(&copiedNum, &divisor).Cmp(&zero) == 0 {
+			return false
+		}
+		copiedNum.Set(number)
+		divisor.Add(&divisor, &two)
+	}
+
+	return true
 }
