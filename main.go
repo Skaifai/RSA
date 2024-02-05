@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"math/big"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -11,11 +12,14 @@ import (
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	//p := stringToInt(readAndCleanInput(reader))
-	//q := stringToInt(readAndCleanInput(reader))
 	fmt.Println("Choose primes:")
 	p := new(big.Int).SetUint64(stringToInt(readAndCleanInput(reader)))
 	q := new(big.Int).SetUint64(stringToInt(readAndCleanInput(reader)))
+	for q.Cmp(p) == 0 {
+		println("Choose another prime")
+		q = new(big.Int).SetUint64(stringToInt(readAndCleanInput(reader)))
+
+	}
 	var n big.Int
 	n.Mul(p, q)
 	var phi big.Int
@@ -25,14 +29,14 @@ func main() {
 
 	publicKeys := possiblePubKeys(&n, &phi)
 	fmt.Println(publicKeys)
-	//chosenPrivateIndex := rand.Intn(len(publicKeys))
-	publicKey := publicKeys[0]
+	chosenPublicIndex := rand.Intn(len(publicKeys))
+	publicKey := publicKeys[chosenPublicIndex]
 	fmt.Println("PUBLIC KEY:", publicKey.String())
 
 	privateKeys := possiblePrivateKeys(&publicKey, &phi, &n)
 	fmt.Println(privateKeys)
-	//chosenPublicIndex := rand.Intn(len(privateKeys))
-	privateKey := privateKeys[0]
+	chosenPrivateIndex := rand.Intn(len(privateKeys))
+	privateKey := privateKeys[chosenPrivateIndex]
 	fmt.Println("PRIVATE KEY:", privateKey.String())
 
 	fmt.Print("Type the message you want to encrypt: ")
